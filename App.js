@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { createStackNavigator, createAppContainer } from "react-navigation";
+import { createStackNavigator, createAppContainer,  createMaterialTopTabNavigator } from "react-navigation";
 import { TouchableHighlight, TouchableOpacity } from "react-native-gesture-handler";
-import Home from "./src/pages/Home";
+import Login from "./src/pages/Login";
+import Register from "./src/pages/Register";
 
 
 const AppNavigator = createStackNavigator({
-  Home: Home
+  Login: Login,
+  Register: Register
 });
 export default createAppContainer(AppNavigator);
