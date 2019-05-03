@@ -5,11 +5,13 @@ import { TouchableHighlight, TouchableOpacity } from "react-native-gesture-handl
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
 import Todo from "./src/pages/TodoPage";
+import Detail from "./src/pages/DetailTodo";
 
 
 const AppNavigator = createStackNavigator({
-  Home: Todo,
   Login: Login,
-  Register: Register
+  Register: Register,
+  Home: Todo,
+  Detail: Detail,
 });
 export default createAppContainer(AppNavigator);

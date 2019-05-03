@@ -48,7 +48,7 @@ export default class App extends Component{
   render() {
     return (
       <View style={styles.container}>
-      <Image resizeMode="center" style={styles.logoStyle} source={require('../images/logo.png')}/>
+      {/* <Image resizeMode="cover" style={styles.logoStyle} source={require('../images/logo.png')}/> */}
         <TextInput
           style={
             (this.state.onFocus) ?

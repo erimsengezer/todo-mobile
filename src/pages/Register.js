@@ -70,7 +70,7 @@ export default class App extends Component{
   render() {
     return (
       <View style={styles.container}>
-        <Image resizeMode="center" style={styles.logoStyle} source={require('../images/logo.png')}/>
+        {/* <Image resizeMode="center" style={styles.logoStyle} source={require('../images/logo.png')}/> */}
         <TextInput
             style={(this.state.nameIsFocused) ? 
             {
@@ -177,7 +177,7 @@ export default class App extends Component{
           
         
 
-        <TouchableOpacity style={styles.buttonStyle}>
+        <TouchableOpacity onPress={() => this.props.navigation.navigate('Home')} style={styles.buttonStyle}>
             <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => this.props.navigation.navigate('Login')} style={styles.buttonStyle}>
