@@ -9,9 +9,9 @@ import Detail from "./src/pages/DetailTodo";
 
 
 const AppNavigator = createStackNavigator({
-  Login: Login,
-  Register: Register,
   Home: Todo,
   Detail: Detail,
+  Login: Login,
+  Register: Register,
 });
 export default createAppContainer(AppNavigator);

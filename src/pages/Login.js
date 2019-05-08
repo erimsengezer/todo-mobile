@@ -27,7 +27,7 @@ export default class App extends Component{
       
       passIsFocused: false,
       onFocus: false
-    
+
     };
   }
   onFocus = () => {

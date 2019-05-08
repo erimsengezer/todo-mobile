@@ -32,15 +32,12 @@ export default class App extends Component{
 
   render() {
     const {todos} = TodoStore
+    const { navigation } = this.props;
+    const todo = navigation.getParam('todo');
     return (
       <View style={styles.container}>
-        {
-          todos.map((todo, index) => 
-            <Text key={index}>Detail: {todo.detail} </Text>
-          )
-        }
-        
-
+        <Text>Detail: {todo.title} </Text>
+        <Text>Detail: {todo.detail} </Text>
       </View>
     );
   }

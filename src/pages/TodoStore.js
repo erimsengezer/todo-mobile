@@ -1,12 +1,19 @@
 import { types, destroy } from 'mobx-state-tree'
+import { observable, computed } from 'mobx';
 
 const Todo = types.model('Todo', {
     title: types.string,
     detail: types.string,
     read: false
-})
+}).actions(self => ({
+    completedTodo(){
+          self.read = true
+          console.log(self.read)
+    }
+}))
 
 const TodoStore = types.model('Todos', {
+
     todos: types.array(Todo)
 })
 .actions(self => ({
@@ -15,16 +22,18 @@ const TodoStore = types.model('Todos', {
     },
     removeTodo(todo){
         destroy(todo)
-    },
-    toggleRead() {
-        self.read = !self.read
     }
 }))
+.views(self => ({
+    get getTodos() { 
+      return self.todos
+    },
+  }))
 .create({
     todos: [{
         title: 'Yapılacak iş',
         detail: "Açıklama alanı olacak",
-        read: true
+        read: false
     }]
 })
 
