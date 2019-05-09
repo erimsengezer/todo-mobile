@@ -1,14 +1,14 @@
 import { types, destroy } from 'mobx-state-tree'
 import { observable, computed } from 'mobx';
+import { clearLine } from 'readline';
 
 const Todo = types.model('Todo', {
     title: types.string,
     detail: types.string,
     read: false
 }).actions(self => ({
-    completedTodo(){
-          self.read = true
-          console.log(self.read)
+    complete(){
+        self.read = true
     }
 }))
 
@@ -22,7 +22,13 @@ const TodoStore = types.model('Todos', {
     },
     removeTodo(todo){
         destroy(todo)
-    }
+    },
+    completedTodo(todo){
+        todo.read = true
+        console.warn(todo.title)
+        console.warn(todo.detail)
+        console.warn(todo.read)
+  }
 }))
 .views(self => ({
     get getTodos() { 

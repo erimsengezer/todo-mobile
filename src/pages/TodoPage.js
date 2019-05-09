@@ -8,7 +8,9 @@ import {
         Button,
         Image,
         TouchableHighlight,
-        Animated
+        Animated,
+        ListView,
+        RefreshControl
       
       } from 'react-native';
 import { TextInput, TouchableOpacity, ScrollView } from 'react-native-gesture-handler';
@@ -20,6 +22,8 @@ const initialState = {
     title: '',
     detail: '',
     check: false,
+    isSwiping: false,
+    refreshing: false,
     animated: new Animated.Value(0),
 }
 
@@ -31,10 +35,18 @@ export default class TodoPage extends Component{
   static navigationOptions = {
     swipeEnabled: false,
     header: null,
-    gesturesEnabled: false 
+    gesturesEnabled: false,
+    
 };
   
   state = initialState
+
+  onRefresh(){
+    this.setState({refreshing: true});
+    fetchData().then(() => {
+      this.setState({refreshing: false});
+    });
+  }
 
   onChangeText(key, value) {
       this.setState({
@@ -58,12 +70,8 @@ export default class TodoPage extends Component{
     // alert("delete")
   }
   completed(todo){
-    todo.completedTodo()
-    
-
-  }
-  toggleRead(todo){
-    todo.toggleRead()
+    TodoStore.completedTodo(todo)
+    this.setState(initialState)
   }
   swipe() {
     this.setState({check: !this.state.check});
@@ -82,7 +90,7 @@ export default class TodoPage extends Component{
           <View style={styles.completeButton}>
               <Image 
                 source={ require('../images/check.png') } 
-                style={{width:30, height:30,}} 
+                style={{width:30, height:30}} 
               />
           </View>;
         const rightButtons = [
@@ -112,100 +120,128 @@ export default class TodoPage extends Component{
             onChangeText={value => this.onChangeTextDesc('detail', value)}
         />
         <Button onPress={this.addTodo.bind(this)} title='Add Todo'/>
-
+        <Button onPress={() =>this.props.navigation.navigate('Completed')} title='Completed Todo'/>
+        <ScrollView
+          horizontal={false}
+          directionalLockEnabled={true}
+          contentContainerStyle={{width: width}}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh}
+            />}
+        >
           {
             getTodos.map((todo, index) =>
-              <Animated.View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  transform: [
-                    {
-                      translateX: this.state.animated.interpolate({
-                        inputRange: [0,1],
-                        outputRange: [1,width]
-                      })
-                    }
-                  ]
-                }}
-              >
-                <Swipeable 
-                  style={styles.swipeableStyle} 
-                  leftContent={leftContent} 
-                  rightButtons={rightButtons} 
-                  onRightActionRelease={() => this.removeTodo(todo)}
-                  onLeftActionRelease={() => todo.completed}
-                  >
-                  <View style={{flexDirection:'row', alignItems:'center'}}>
-                  {/* <TouchableOpacity
-                    style=
-                    {
-                      (this.state.check) ?
+                // Animeted.View
+                // style={{
+                //   flexDirection: 'row',
+                //   alignItems: 'center',
+                //   transform: [
+                //     {
+                //       translateX: this.state.animated.interpolate({
+                //         inputRange: [0,1],
+                //         outputRange: [1,width]
+                //       })
+                //     }
+                //   ]
+                // }}
+                  <Swipeable 
+                    style={
+                      (todo.read) ? 
                       {
-                        backgroundColor: '#438BFF',
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        marginLeft: 10,
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        opacity: 0
                       }:
                       {
-                        backgroundColor: '#fff',
+                        width: width-10,
+                        marginBottom: 10,
+                        marginLeft: 10,
+                        marginRight: 10,
+                        borderBottomWidth: 0.4,
+                        borderBottomColor: '#147efb',
+                        marginTop: 10,
+                        padding:0,
+                        justifyContent: 'center',
+                      }
+                    } 
+                    // onSwipeStart={() => this.setState({isSwiping: true})}
+                    // onSwipeRelease={() => this.setState({isSwiping: false})}
+                    leftContent={leftContent} 
+                    rightButtons={rightButtons} 
+                    onRightActionRelease={() => this.removeTodo(todo)}
+                    onLeftActionRelease={() => this.completed(todo)}
+                    >
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                    {/* <TouchableOpacity
+                      style=
+                      {
+                        (this.state.check) ?
+                        {
+                          backgroundColor: '#438BFF',
                           width: 20,
                           height: 20,
                           borderRadius: 10,
-                          borderWidth: 1,
-                          borderColor: '#000',
                           marginLeft: 10,
                           justifyContent: 'center',
                           alignItems: 'center',
-                      }
-                    }
-                    onPress={() => this.swipe()}
-                  >
-                    <Image 
-                      source={require('../images/checkIconWhite.png')}
-                      style={
-                        (this.state.check) ? 
-                        {
-                          width: 10,
-                          height: 10
                         }:
+                        {
+                          backgroundColor: '#fff',
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            borderWidth: 1,
+                            borderColor: '#000',
+                            marginLeft: 10,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }
+                      }
+                      onPress={() => this.swipe()}
+                    >
+                      <Image 
+                        source={require('../images/checkIconWhite.png')}
+                        style={
+                          (this.state.check) ? 
+                          {
+                            width: 10,
+                            height: 10
+                          }:
+                          {
+                            opacity: 0
+                          }
+                        }
+                      />
+                    </TouchableOpacity> */}
+                    <TouchableOpacity style={{margin: 20}} onPress={() => this.props.navigation.navigate('Detail', {todo:todo})}>
+                      <Text key={index}>Title: {todo.title}</Text>
+                      <Text key={index}>{todo.read ? 'yes' : 'no'}</Text>
+                    </TouchableOpacity>
+                    <Image 
+                      source={require('../images/check.png')}
+                      style=
+                      {
+                        (todo.read) ?
+                        {
+                          width: 30,
+                          height: 30,
+                          marginLeft: width/2-20
+                        }
+                        :
                         {
                           opacity: 0
                         }
                       }
                     />
-                  </TouchableOpacity> */}
-                  <TouchableOpacity style={{margin: 20}} onPress={() => this.props.navigation.navigate('Detail', {todo:todo})}>
-                    <Text key={index}>Title: {todo.title}</Text>
-                    <Text key={index}>{todo.read ? 'yes' : 'no'}</Text>
-                  </TouchableOpacity>
-                  <Image 
-                    source={require('../images/check.png')}
-                    style=
-                    {
-                      (todo.read) ?
-                      {
-                        width: 30,
-                        height: 30,
-                      }
-                      :
-                      {
-                        opacity: 0
-                      }
-                    }
-                  />
-                  </View>
-                    {/* <Text 
-                        onPress={() => this.toggleRead(todo)} 
-                        key={index}> {todo.read ? 'Yes' : 'No'}
-                    </Text> */}
-                </Swipeable>
-              </Animated.View>
+                    </View>
+                      {/* <Text 
+                          onPress={() => this.toggleRead(todo)} 
+                          key={index}> {todo.read ? 'Yes' : 'No'}
+                      </Text> */}
+                  </Swipeable>
             )
           }
+        </ScrollView>
       </View>
     );
   }
@@ -268,7 +304,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     paddingRight: 20,
-    marginRight: 2,
+    marginRight: 10,
     alignItems: 'flex-end',
   },
 });

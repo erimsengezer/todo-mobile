@@ -21,11 +21,6 @@ const width = Dimensions.get("window").width;
 
 export default class App extends Component{
   
-  static navigationOptions = {
-    swipeEnabled: false,
-    header: null 
-   
-};
   
   state = initialState;
 
@@ -36,7 +31,7 @@ export default class App extends Component{
     const todo = navigation.getParam('todo');
     return (
       <View style={styles.container}>
-        <Text>Detail: {todo.title} </Text>
+        <Text>Title: {todo.title} </Text>
         <Text>Detail: {todo.detail} </Text>
       </View>
     );
