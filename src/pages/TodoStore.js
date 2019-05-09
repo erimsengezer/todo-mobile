@@ -1,6 +1,5 @@
 import { types, destroy } from 'mobx-state-tree'
 import { observable, computed } from 'mobx';
-import { clearLine } from 'readline';
 
 const Todo = types.model('Todo', {
     title: types.string,
