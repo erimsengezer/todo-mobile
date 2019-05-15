@@ -17,6 +17,9 @@ import { TextInput, TouchableOpacity, ScrollView } from 'react-native-gesture-ha
 import Swipeable from 'react-native-swipeable';
 import TodoStore from './TodoStore';
 import { observable } from 'mobx';
+import axios from 'react-native-axios';
+
+import Task from '../components/Task';
 
 const initialState = {
     title: '',
@@ -24,6 +27,9 @@ const initialState = {
     check: false,
     isSwiping: false,
     refreshing: false,
+    data: [],
+    token: [],
+    error: "",
     animated: new Animated.Value(0),
 }
 
@@ -31,7 +37,7 @@ const width = Dimensions.get("window").width;
 
 
 export default class TodoPage extends Component{
-  
+
   static navigationOptions = {
     swipeEnabled: false,
     header: null,
@@ -40,6 +46,37 @@ export default class TodoPage extends Component{
 };
   
   state = initialState
+  
+  componentDidMount(){
+    axios.post(
+      'https://mcucen-todoappapi.herokuapp.com/oauth/token',
+      {
+        'username': 'erimsengezer@gmail.com',
+        'password': '123123',
+        'grant_type': 'password',
+        'client_secret': 'qsRhvkyyY6XqIqlSwSdK3iC83XFapDUDGNocLlER',
+        'client_id': '2',
+        'scope': '*'
+      }
+    ).then(response => this.setState({token: response.data}))
+    .catch(error => console.log(error))
+  }
+
+  getData(){
+     const token = this.state.token.access_token
+     console.log(token)
+
+    axios.get('https://mcucen-todoappapi.herokuapp.com/api/todos',
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'token_type': 'Bearer'
+      }
+    }
+    )
+    .then(response => this.setState({data: response.data.data}))
+    .catch(error => console.log(error))
+  }
 
   onRefresh(){
     this.setState({refreshing: true});
@@ -82,6 +119,13 @@ export default class TodoPage extends Component{
     }).start();
      
   }
+  
+  renderData(){
+    this.getData();
+    return this.state.data.map((items, Id) =>
+      <Task key={Id} data={items} />
+    )
+  }
 
 
 
@@ -107,6 +151,22 @@ export default class TodoPage extends Component{
         const {todos,getTodos} = TodoStore
     return ( 
       <View style={styles.container}>
+      <TouchableOpacity
+          style={
+            (this.state.token.access_token != null) ? 
+            {
+              backgroundColor: "blue",
+              padding: 10,
+              width: width/4,
+              alignItems: "center"
+            }:
+            {
+              opacity: 0
+            }
+          }
+        >
+          <Text style={{color:'white'}}>Button</Text>
+      </TouchableOpacity>
         <TextInput
             style={styles.titleInput}
             placeholder={"Title"} 
@@ -121,6 +181,8 @@ export default class TodoPage extends Component{
         />
         <Button onPress={this.addTodo.bind(this)} title='Add Todo'/>
         <Button onPress={() =>this.props.navigation.navigate('Completed')} title='Completed Todo'/>
+        
+                    
         <ScrollView
           horizontal={false}
           directionalLockEnabled={true}
@@ -130,22 +192,17 @@ export default class TodoPage extends Component{
               refreshing={this.state.refreshing}
               onRefresh={this._onRefresh}
             />}
-        >
+          >
           {
+            this.getData()
+          }
+           {
+            this.state.data.map((items, Id) =>
+              <Task key={Id} data={items} />
+            )
+          }
+          {/* {
             getTodos.map((todo, index) =>
-                // Animeted.View
-                // style={{
-                //   flexDirection: 'row',
-                //   alignItems: 'center',
-                //   transform: [
-                //     {
-                //       translateX: this.state.animated.interpolate({
-                //         inputRange: [0,1],
-                //         outputRange: [1,width]
-                //       })
-                //     }
-                //   ]
-                // }}
                   <Swipeable 
                     style={
                       (todo.read) ? 
@@ -164,55 +221,13 @@ export default class TodoPage extends Component{
                         justifyContent: 'center',
                       }
                     } 
-                    // onSwipeStart={() => this.setState({isSwiping: true})}
-                    // onSwipeRelease={() => this.setState({isSwiping: false})}
                     leftContent={leftContent} 
                     rightButtons={rightButtons} 
                     onRightActionRelease={() => this.removeTodo(todo)}
                     onLeftActionRelease={() => this.completed(todo)}
                     >
                     <View style={{flexDirection:'row', alignItems:'center'}}>
-                    {/* <TouchableOpacity
-                      style=
-                      {
-                        (this.state.check) ?
-                        {
-                          backgroundColor: '#438BFF',
-                          width: 20,
-                          height: 20,
-                          borderRadius: 10,
-                          marginLeft: 10,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }:
-                        {
-                          backgroundColor: '#fff',
-                            width: 20,
-                            height: 20,
-                            borderRadius: 10,
-                            borderWidth: 1,
-                            borderColor: '#000',
-                            marginLeft: 10,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }
-                      }
-                      onPress={() => this.swipe()}
-                    >
-                      <Image 
-                        source={require('../images/checkIconWhite.png')}
-                        style={
-                          (this.state.check) ? 
-                          {
-                            width: 10,
-                            height: 10
-                          }:
-                          {
-                            opacity: 0
-                          }
-                        }
-                      />
-                    </TouchableOpacity> */}
+
                     <TouchableOpacity style={{margin: 20}} onPress={() => this.props.navigation.navigate('Detail', {todo:todo})}>
                       <Text key={index}>Title: {todo.title}</Text>
                       <Text key={index}>{todo.read ? 'yes' : 'no'}</Text>
@@ -220,26 +235,53 @@ export default class TodoPage extends Component{
                     <Image 
                       source={require('../images/check.png')}
                       style=
-                      {
-                        (todo.read) ?
                         {
-                          width: 30,
-                          height: 30,
-                          marginLeft: width/2-20
+                          (todo.read) ?
+                          {
+                            width: 30,
+                            height: 30,
+                            marginLeft: width/2-20
+                          }
+                          :
+                          {
+                            opacity: 0
+                          }
                         }
-                        :
-                        {
-                          opacity: 0
-                        }
-                      }
                     />
                     </View>
-                      {/* <Text 
-                          onPress={() => this.toggleRead(todo)} 
-                          key={index}> {todo.read ? 'Yes' : 'No'}
-                      </Text> */}
                   </Swipeable>
             )
+          } */}
+          {
+            this.state.data.map((items, index) =>
+                  <Swipeable 
+                    style={
+                      {
+                        width: width-10,
+                        marginBottom: 10,
+                        marginLeft: 10,
+                        marginRight: 10,
+                        borderBottomWidth: 0.4,
+                        borderBottomColor: '#147efb',
+                        marginTop: 10,
+                        padding:0,
+                        justifyContent: 'center',
+                      }
+                    } 
+                    leftContent={leftContent} 
+                    rightButtons={rightButtons} 
+                    onRightActionRelease={() => this.removeTodo(todo)}
+                    onLeftActionRelease={() => this.completed(todo)}
+                    >
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+
+                    <TouchableOpacity style={{margin: 20}} onPress={() => this.props.navigation.navigate('Detail', {todo:todo})}>
+                      <Text key={index}>Title: {items.name}</Text>
+                      {/* <Text key={index}>{todo.read ? 'yes' : 'no'}</Text> */}
+                    </TouchableOpacity>
+                    </View>
+                  </Swipeable>
+                    )
           }
         </ScrollView>
       </View>
@@ -307,4 +349,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: 'flex-end',
   },
+  scroll: {
+    width: width
+  }
 });
